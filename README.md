@@ -13,7 +13,7 @@ This is a reduced set of codes for the purpose of testing new maze designs
 3. If you want to check navigation results, data files are saved in directory: solving_log_dir 
 
 4. In case you want to test larger revealing (2 steps, 3 steps, etc.), change the initial level in the code updateVisible.m 
-  Specifically, in line 22, it starts from 1 (levels = 1: -1: 1). If you make it levels (3:-1:1), it will reveal 3 square-range from the agent's location. 
+  Specifically, in line 22, it starts from 1 (levels = 1: -1: 1). If you make it levels (3: -1: 1), it will reveal 3 square-range from the agent's location. 
 
 
  
