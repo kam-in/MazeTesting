@@ -1,201 +1,203 @@
-import pygame, time, random, math
-from pygame.locals import *
-pygame.display.init()
-pygame.mixer.init()
+import os
 
-# create the screen
-screen_length = 288
-screen_width = 224
-display = pygame.display.set_mode((screen_length*2, screen_width*2))
-screen = pygame.Surface((screen_length, screen_width))
-pygame.display.set_caption("Crystals of Time by SmellyFrog")
+import numpy as np
+import pygame
+import time
+import random
+from datetime import datetime, timezone
 
-spr_player = pygame.image.load("assets/cat.png").convert_alpha()
-spr_tiles = pygame.image.load("assets/tiles2.png").convert_alpha() 
-target_block = pygame.image.load("assets/dart.png").convert()
-
-# class Player(pygame.sprite.Sprite):
-class Player():
-    def __init__(self, x, y):
-        # super(Player, self).__init__()
-        self.x = x
-        self.y = y 
-        self.xSpeed = 0
-        self.ySpeed = 0
-        self.bottomCol = False
-        self.topCol = False
-        self.leftCol = False
-        self.rightCol = False
-
-    def update(self):
-
-        self.x += self.xSpeed
-        self.y += self.ySpeed
-
-        if self.ySpeed < 8:
-            self.ySpeed += 0.5
-        if self.bottomCol:
-            self.ySpeed = 0
-            if self.xSpeed > 0:
-                self.xSpeed -= 0.3
-            elif self.xSpeed < 0:
-                self.xSpeed += 0.3
-            if abs(self.xSpeed) < 0.3:
-                self.xSpeed = 0
-
-        if keys[pygame.K_UP] and self.y > -1:
-            self.ySpeed -= 0.2
-        if keys[pygame.K_DOWN] and self.y < screen_width-32:
-            self.ySpeed += 0.2
-        if keys[pygame.K_LEFT] and self.x > -1:
-            self.xSpeed -= 0.2
-        if keys[pygame.K_RIGHT] and self.x < screen_length-32:
-            self.xSpeed += 0.2
-         
-        
-    def draw(self):
-        screen.blit(spr_player, (int(self.x), int(self.y)))
-        # pygame.draw.rect(display, (0,255, 0), (int(self.x), int(self.y), 32, 32))
-
-class Terrain():
-    def __init__(self, x, y, Type):
-        self.x = x
-        self.y = y
-        self.col = False
-        self.type = Type
-    def update(self):
-        
-        if (self.x // 32, self.y // 32) != target: 
-            #print('player_x_y {} {} '.format(player.x, player.y))
-            if player.x + 28 > self.x and player.x < self.x +28  and not self.col:
-                if player.y + 28 > self.y and player.y + 28 < self.y + 16 :
-                # player.y + 32 > self.y (if player wants to go down)
-                    #print('down player_x_y {} {} self_x_y {} {}'.format(player.x, player.y, self.x, self.y))
-                    player.y = self.y - 32
-                    player.ySpeed = 0
-                    player.bottomCol = True
-                    self.col = True
-        
-                elif player.y > self.y + 16 and player.y < self.y + 28:
-                    #print('up player_x_y {} {} self_x_y {} {}'.format(player.x, player.y, self.x, self.y))
-                    player.y = self.y + 32
-                    player.ySpeed = 0
-                    player.topCol = True
-                    self.col = True
-            if player.y + 28 > self.y and player.y < self.y + 28 and not self.col:
-                if player.x + 28 > self.x and player.x + 28 < self.x + 16:
-                    #print('right player_x_y {} {} self_x_y {} {}'.format(player.x, player.y, self.x, self.y))
-                    player.x = self.x - 32 
-                    player.xSpeed = 0
-                    player.rightCol = True
-                    self.col = True
-                elif player.x > self.x + 16 and player.x < self.x + 28:
-                    #print('left player_x_y {} {} self_x_y {} {}'.format(player.x, player.y, self.x, self.y))
-                    player.x = self.x + 32
-                    player.xSpeed = 0
-                    player.leftCol = True
-                    self.col = True
-            self.col = False
-
-        right_index = (round((player.x+32)/32), round(player.y / 32))
-        left_index = (round((player.x-32) / 32), round(player.y / 32))
-        up_index = (round(player.x / 32), round((player.y-32) / 32))
-        down_index = (round(player.x / 32), round((player.y+32) / 32))
-        #print('right{} left{} up{} down{}'.format(right_index, left_index, up_index, down_index))
-        if (self.x // 32, self.y // 32) == right_index:
-            if (self.x // 32, self.y // 32) in hidden_block_index:
-                #print('right{} self_x_y {} {}'.format(right_index, self.x, self.y))
-                remove.append(self)
-            elif (self.x // 32, self.y // 32) == target:
-                self.type = 2
-                     
-        if (self.x // 32, self.y // 32) == left_index:
-            if (self.x // 32, self.y // 32) in hidden_block_index:
-                #print('left{} self_x_y {} {}'.format(left_index, self.x, self.y))
-                remove.append(self)
-            elif (self.x // 32, self.y // 32) == target:
-                self.type = 2
-
-        if (self.x // 32, self.y // 32) == up_index:
-            if (self.x // 32, self.y // 32) in hidden_block_index:
-                #print('up{} self_x_y {} {}'.format(up_index, self.x, self.y))
-                remove.append(self)
-            elif (self.x // 32, self.y // 32) == target:
-                self.type = 2
-              
-
-        if (self.x // 32, self.y // 32) == down_index: 
-            if (self.x // 32, self.y // 32) in hidden_block_index:
-                #print('down{} self_x_y {} {}'.format(down_index, self.x, self.y))
-                remove.append(self)
-            elif (self.x // 32, self.y // 32) == target:
-                self.type = 2
-         
-                    
-            
-    def draw(self):
-        # this blits the tiles at the position, but starting with 6*32 end ending 32 further
-        screen.blit(spr_tiles, (int(self.x), int(self.y)), (self.type * 32, 0, 32, 32))
-
-
-'''
-P is the player
-0 is the grass
-2 is the wall
-1 is the dirt
-C diamond
-4 jumper
-3 danger stone
-'''
+import psychopy
+from psychopy import gui, event, core
 
 from Maze_map import *
 
 
+### Set specific paths --- change based on computer --- follow same folder format
+filedir = '/Users/chaodanluo/Desktop/lab_github/Maze/solving_log_dir/'#provide output file directory
+
+### Session information GUI
+correctSubj = False
+while not correctSubj:
+    dialog = gui.Dlg(title="") #task title ("Sherlock Spacebar Task)
+    dialog.addField("Participant Number:")
+    dialog.show()
+    if gui.OK:
+        if dialog.data[0][1].isdigit():
+            subjectID = int(dialog.data[0])
+            correctSubj = True
+
+# Create the logfile
+if os.path.isfile(filedir+"%d_maze_log.txt" %(subjectID)):
+    os.rename(filedir+"%d_maze_log.txt" %(subjectID), filedir+"%d_maze_log_old_%s.txt" %(subjectID,time.time()))
+logfile = open(filedir+"%d_maze_log.txt" %(subjectID),'w')
+line = "key_pressed \t time \t coordinate \t RT \n"
+logfile.write(line)
 
 
-player_y = 42069
-player_x = 42069
-room_num = 0
-run = True
-while run:
-    ### level generation
+# Set up a global clock for keeping time
+globalClock = core.Clock()
+
+# define experiment structure
+nBlock = 1
+nTrial = 5
+
+###################### START: modification of Maze.py ###########################################
+# create the screen
+screen_length = 288
+screen_width = 224
+screen = pygame.Surface((screen_length, screen_width))
+
+def run_trial(display, screen, trial_map, spr_player, spr_tiles, background):
+
+    # class Player(pygame.sprite.Sprite):
+    class Player():
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y 
+    
+        def update(self):
+
+            #print('curr self_x_y {} {}'.format(self.x, self.y))
+            for event in events:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP and self.y > 0:
+                        if ((self.x/32, (self.y - 32)/32)) not in brick_index:
+                            self.y -= 32
+                            key_pressed = 'up'
+                            timestamp = datetime.now(timezone.utc).astimezone()
+                            coordinate = (self.x / 32) + 1, (self.y / 32) + 1
+                            rt = timestamp - start_time
+                            line = [key_pressed, str(timestamp), coordinate, rt]
+                            lineTOstr = '\t'.join([str(elem) for elem in line])
+                            logfile.write(lineTOstr + '\n')
+                    if event.key == pygame.K_DOWN and self.y < screen_width-32:
+                        if ((self.x/32, (self.y + 32)/32)) not in brick_index:
+                            self.y += 32
+                            key_pressed = 'down'
+                            timestamp = datetime.now(timezone.utc).astimezone()
+                            coordinate = (self.x / 32) + 1, (self.y / 32) + 1
+                            rt = timestamp - start_time
+                            line = [key_pressed, str(timestamp), coordinate, rt]
+                            lineTOstr = '\t'.join([str(elem) for elem in line])
+                            logfile.write(lineTOstr + '\n')
+                    if event.key == pygame.K_LEFT and self.x > 0:
+                        if ((self.x - 32)/32, self.y/32) not in brick_index:
+                            self.x -= 32
+                            key_pressed = 'left'
+                            timestamp = datetime.now(timezone.utc).astimezone()
+                            coordinate = (self.x / 32) + 1, (self.y / 32) + 1
+                            rt = timestamp - start_time
+                            line = [key_pressed, str(timestamp), coordinate, rt]
+                            lineTOstr = '\t'.join([str(elem) for elem in line])
+                            logfile.write(lineTOstr + '\n')
+                    if event.key == pygame.K_RIGHT and self.x < screen_length-32:
+                        if ((self.x + 32)/32, self.y/32) not in brick_index:
+                            self.x += 32
+                            key_pressed = 'right'
+                            timestamp = datetime.now(timezone.utc).astimezone()
+                            coordinate = (self.x / 32) + 1, (self.y / 32) + 1,
+                            rt = timestamp - start_time
+                            line = [key_pressed, str(timestamp), coordinate, rt]
+                            lineTOstr = '\t'.join([str(elem) for elem in line])
+                            logfile.write(lineTOstr + '\n')
+            
+
+        def draw(self):
+            screen.blit(spr_player, (int(self.x), int(self.y)))
+
+
+    class Terrain():
+        def __init__(self, x, y, Type):
+            self.x = x
+            self.y = y
+            self.col = False
+            self.type = Type
+        def update(self):
+
+
+            right_index = ((player.x+32) / 32, player.y / 32)
+            left_index = ((player.x-32) / 32, player.y / 32)
+            up_index = (player.x / 32, (player.y-32) / 32)
+            down_index = (player.x / 32, (player.y+32) / 32)
+            # print('right{} left{} up{} down{}'.format(right_index, left_index, up_index, down_index))
+            # print('player_x_y {}'.format((round((player.x/32), round(player.y / 32)))))
+            if (self.x // 32, self.y // 32) == right_index:
+                if (self.x // 32, self.y // 32) in hidden_block_index:
+                    #print('right{} self_x_y {} {}'.format(right_index, self.x, self.y))
+                    remove.append(self)
+                elif (self.x // 32, self.y // 32) == target:
+                    self.type = 2
+                        
+            if (self.x // 32, self.y // 32) == left_index:
+                if (self.x // 32, self.y // 32) in hidden_block_index:
+                    #print('left{} self_x_y {} {}'.format(right_index, self.x, self.y))
+                    remove.append(self)
+                elif (self.x // 32, self.y // 32) == target:
+                    self.type = 2
+
+            if (self.x // 32, self.y // 32) == up_index:
+                if (self.x // 32, self.y // 32) in hidden_block_index:
+                    #print('up{} self_x_y {} {}'.format(up_index, self.x, self.y))
+                    remove.append(self)
+                elif (self.x // 32, self.y // 32) == target:
+                    self.type = 2
+                
+
+            if (self.x // 32, self.y // 32) == down_index: 
+                if (self.x // 32, self.y // 32) in hidden_block_index:
+                    #print('down{} self_x_y {} {}'.format(down_index, self.x, self.y))
+                    remove.append(self)
+                elif (self.x // 32, self.y // 32) == target:
+                    self.type = 2
+            
+                
+        def draw(self):
+            # this blits the tiles at the position, but starting with 6*32 end ending 32 further
+            screen.blit(spr_tiles, (int(self.x), int(self.y)), (self.type * 32, 0, 32, 32))
+
+
 
     load = []
     remove = []
-    player = Player(0, 0)
+    player = Player(0,0)
+    start_time = datetime.now(timezone.utc).astimezone()
+    start_loc = (1.0, 1.0)
+    line = ['start', str(start_time), start_loc]
+    lineTOstr = '\t'.join([str(elem) for elem in line])
+    logfile.write(lineTOstr + '\n')
     hidden_block_index = []
+    brick_index = []
     target = ()
 
-    for i in range(len(layout[room_num])):
-        for j in range(len(layout[room_num][i])):
-            if layout[room_num][i][j] == "P":
-                player = Player(j*32, i*32)
+    for i in range(len(trial_map)):
+        for j in range(len(trial_map[i])):
+            if trial_map[i][j] == "P":
+                player = Player(j * 32, i * 32)
                 load.append(player)
-            if layout[room_num][i][j] == "0":
-                load.append(Terrain(j*32, i*32, 0))
-            if layout[room_num][i][j] == "1":
-                load.append(Terrain(j*32, i*32, 1))
-                hidden_block_index.append((j,i))
-            if layout[room_num][i][j] == "2":
-                load.append(Terrain(j*32, i*32, 1))
-                target = (j,i)
-           
-
-    if player not in load and room_num not in (0, 14, 15):
-        load.append(player)
+            if trial_map[i][j] == "0":
+                load.append(Terrain(j * 32, i * 32, 0))
+                brick_index.append((j,i))
+            if trial_map[i][j] == "1":
+                load.append(Terrain(j * 32, i * 32, 1))
+                hidden_block_index.append((j, i))
+            if trial_map[i][j] == "2":
+                load.append(Terrain(j * 32, i * 32, 1))
+                target = (j, i)
 
     alive = True
-    while run and alive:
+    while alive:
 
-        screen.fill((0, 0, 0))
-    
+        screen.blit(background, (0, 0))
 
         # event is your mouse movement, if press "x", quit the game
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 run = False
 
-        keys = pygame.key.get_pressed()
+  
+
+        # KK: LOG RESPONSE, AGENT LOCATION (COORDINATES INT HE MATRIX)
 
         for obj in load:
             obj.update()
@@ -203,19 +205,64 @@ while run:
         for obj in remove:
             load.remove(obj)
         remove = []
-        
+
         if (round(player.x / 32), round(player.y / 32)) == target:
             alive = False
 
-        if room_num == 0 and (keys[pygame.K_SPACE] or keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_UP] or keys[pygame.K_DOWN]):
-            room_num += 1      
-            alive = False
-
-        display.blit(pygame.transform.scale(screen, (screen_length*2, screen_width*2)),(0, 0))
+        display.blit(pygame.transform.scale(screen, (screen_length * 2, screen_width * 2)), (0, 0))
         pygame.display.flip()
 
-
-    if (round(player.x / 32), round(player.y / 32)) == target:
-        room_num += 1
  
-pygame.quit()
+##################### END: modification of Maze.py ###########################################
+
+def run_guess(display, screen, trial_map, spr_player, spr_tiles, background):
+    # load & display the initial map status
+    # ask where the goal would be
+    # record the coordinate (from the maze matrix) of mouse click
+    print('hey')
+
+print(len(layout))
+# KK: ADD RANDOM SELECTION OF LAYOUTS TO USE
+
+# running blocks
+
+# shuffle themes
+maze_theme = {
+    'face' : ['happyface', 'original2', 'milkywhite'],
+    'dolphin' : ['dolphin', 'ocean', 'blue'],
+    'monkey' : ['monkey', 'jungle', 'green'],
+    'bird' : ['bird', 'sky', 'white'],
+    'cow' : ['cow', 'pasture3', 'grassgreen']
+}
+theme_strings = ['face', 'dolphin', 'monkey', 'bird', 'cow']
+random.shuffle(theme_strings)
+for a in range(len(theme_strings)):
+    layout[a] + (theme_strings[a],)
+new_layout = [layout[a] + (theme_strings[a],) for a in range(len(theme_strings)) ]
+
+for i in range(nBlock):
+    # KK: printings are for sanity check
+    tseq = np.arange(0, nTrial, 1)
+    print(tseq)
+    random.shuffle(tseq)
+    print(tseq)
+
+    # set up and run each trial
+    for j in range(len(tseq)):
+        # define map & agent for this trial
+        display = pygame.display.set_mode((screen_length * 2, screen_width * 2)) # needs to be run before pygame.image.load
+
+        # re-select in a map-specific manner
+        player_name = maze_theme[new_layout[tseq[j]][7]][0]
+        tiles_name = maze_theme[new_layout[tseq[j]][7]][1]
+        background_name = maze_theme[new_layout[tseq[j]][7]][2]
+
+        spr_player = pygame.image.load("assets/" + player_name + ".png").convert_alpha()
+        spr_tiles = pygame.image.load("assets/" + tiles_name + ".png").convert_alpha() 
+        background = pygame.image.load("assets/" + background_name + ".jpg").convert()
+       
+        trial_map = layout[tseq[j]]
+        #run_guess(display, screen, trial_map, spr_player, spr_tiles, background)
+        run_trial(display, screen, trial_map, spr_player, spr_tiles, background)
+        pygame.quit()
+logfile.close()
