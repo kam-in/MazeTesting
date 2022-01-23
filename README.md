@@ -1,4 +1,4 @@
-# Design Tests [notes for April]
+# Design Tests
 
 This is a reduced set of codes for the purpose of testing new maze designs 
 - removed demo, practice, block repetition, etc. to allow for simply loading/testing the maze designs
@@ -8,7 +8,6 @@ This is a reduced set of codes for the purpose of testing new maze designs
   For now, I've only put one (AprilNew2.txt: the maze #2 in our design spreadsheet    (https://docs.google.com/spreadsheets/d/1E5mf8nWh6n2AFcmjj3vgF_wFdkPGytdiiczdROdz4Vc/edit#gid=0))
 
 2. To test other designs, create and add txt files that contain the designs in this directory. 
-   Feel free to be creative with naming your mazes!! Clearly I was not very creative with that. :-/
 
 3. If you want to check navigation results, data files are saved in directory: solving_log_dir 
 
